@@ -6,6 +6,8 @@ FMotos es un panel para gestionar ventas de motos, prospectos, clientes e invent
 
 **Acceso** · Inicia sesión con una cuenta autorizada en Supabase.
 
+[Trabajos completados en GitHub](https://github.com/Sthinpp/fmotos/issues?q=is%3Aissue+is%3Aclosed)
+
 ## Qué incluye
 
 | Apartado | Función |
@@ -103,9 +105,9 @@ El código de los cuatro apartados está en [`ML/`](ML/).
 
 ## Arquitectura y despliegue
 
-- [`src/`](src/) contiene la interfaz React + Vite.
-- [`backend/`](backend/) expone FastAPI y las rutas `/api`. En producción, Vercel sirve la interfaz y la API en el mismo dominio.
-- [`supabase/`](supabase/) contiene la configuración SQL para el acceso privado a la base. Las operaciones de datos verifican la sesión y la membresía.
+- [Pantallas de React](src/) y [API de FastAPI](backend/). En producción, Vercel sirve la interfaz y la API en el mismo dominio.
+- [Base de datos y autenticación](supabase/). Las operaciones de datos verifican la sesión y la membresía.
+- [Pruebas del sistema](tests/). Cubren la API, los módulos de Inteligencia IA y los permisos de la base.
 - [`vercel.json`](vercel.json) configura el despliegue desde GitHub. En Vercel, establece `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en producción. FastAPI también usa esas dos variables cuando las equivalentes de Python están ausentes. En Supabase, configura la dirección publicada como **Site URL**.
 - [`.github/workflows/ci.yml`](.github/workflows/ci.yml) compila la interfaz y ejecuta las pruebas de Python y PostgreSQL en GitHub Actions.
 
