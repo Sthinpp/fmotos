@@ -1,0 +1,10 @@
+node_modules
+dist
+.venv
+.git
+__pycache__
+**/__pycache__
+.env
+.env.*
+datos
+tests

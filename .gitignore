@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+*.sqlite*
+.vercel/
+.env*
+!.env.example
+/datos/
+*.xlsx
+*.xls
+*.privado.json
+*-respaldo*.json

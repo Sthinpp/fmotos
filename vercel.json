@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "fastapi",
+  "buildCommand": "npm ci --omit=dev && npm run build",
+  "functions": {
+    "app.py": {
+      "excludeFiles": "{datos,tests,supabase,node_modules,.github,src}/**"
+    }
+  }
+}
