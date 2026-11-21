@@ -6,7 +6,7 @@ FMotos es un panel para gestionar ventas de motos, prospectos, clientes e invent
 
 **Acceso** · Inicia sesión con una cuenta autorizada en Supabase.
 
-[Trabajos completados en GitHub](https://github.com/Sthinpp/fmotos/issues?q=is%3Aissue+is%3Aclosed)
+[Trabajos completos en GitHub](https://github.com/Sthinpp/fmotos/issues?q=is%3Aissue+is%3Aclosed)
 
 ## Qué incluye
 
@@ -16,7 +16,7 @@ FMotos es un panel para gestionar ventas de motos, prospectos, clientes e invent
 | Ventas y clientes | Registra ventas, clientes y pagos. |
 | CRM | Organiza prospectos, contactos y seguimientos. |
 | Inventario | Controla motos, repuestos, entradas, salidas y alertas por stock mínimo. |
-| Inteligencia IA | Proyecta ventas, compara planes de reposición, estima prioridades y agrupa repuestos. |
+| Inteligencia IA | Proyecta ventas, compara planes de reposición, estima prioridades y agrupa los repuestos. |
 | Reportes | Exporta registros en CSV y administra respaldos en JSON. |
 
 ## Ejecutar en tu computadora
