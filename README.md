@@ -4,7 +4,7 @@ FMotos es un panel para gestionar ventas de motos, prospectos, clientes e invent
 
 **Panel publicado** · [Abrir FMotos en Vercel](https://fmotos-seven.vercel.app/)
 
-**Acceso** · Inicia sesión con una cuenta autorizada en Supabase.
+**Acceso** · Iniciar sesión con una cuenta autorizada en Supabase.
 
 [Trabajos completos en GitHub](https://github.com/Sthinpp/fmotos/issues?q=is%3Aissue+is%3Aclosed)
 
