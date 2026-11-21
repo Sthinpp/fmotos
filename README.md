@@ -111,4 +111,4 @@ El código de los cuatro apartados está en [`ML/`](ML/).
 - [`vercel.json`](vercel.json) configura el despliegue desde GitHub. En Vercel, establece `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en producción. FastAPI también usa esas dos variables cuando las equivalentes de Python están ausentes. En Supabase, configura la dirección publicada como **Site URL**.
 - [`.github/workflows/ci.yml`](.github/workflows/ci.yml) compila la interfaz y ejecuta las pruebas de Python y PostgreSQL en GitHub Actions.
 
-Para correr las pruebas en tu computadora, ejecuta `npm run test:sql` y `python -m unittest discover -s tests -v` con el Python de tu entorno virtual. Los archivos `.env`, la carpeta `datos/` y los respaldos con información de clientes se mantienen fuera del repositorio.
+Para correr las pruebas en tu computadora, ejecuta `npm run test:sql` y `python -m unittest discover -s tests -v` con el Python de tu entorno virtual. Los archivos `.env`, la carpeta `datos/` y los respaldos con información de clientes se mantienen fuera del repositorio
