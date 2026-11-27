@@ -12,11 +12,18 @@
   "dependencies": {
     "@supabase/supabase-js": "2.119.2",
     "@vitejs/plugin-react": "5.2.0",
+    "exceljs": "4.4.0",
+    "jspdf": "4.2.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "vite": "7.3.8"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.17"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
   }
 }

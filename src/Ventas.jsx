@@ -6,7 +6,7 @@ function datosFormulario(venta,stock) {
   return {
     motoId:venta?.motoId||stock[0]?.id||'', tipoDocumento:venta?.tipoDocumento||'DNI', numeroDocumento:venta?.numeroDocumento||'',
     ruc:venta?.ruc||'', cliente:venta?.cliente||'', telefono:venta?.telefono||'', correo:venta?.correo||'', direccion:venta?.direccion||'',
-    precioVenta:venta?.precioVenta??'', metodo:venta?pagos(venta)[0].metodo:'Efectivo', fecha:venta?.fecha||hoy(),
+    precioVenta:venta?.precioVenta??'', pagos:venta?pagos(venta).map(p=>({...p})):[{metodo:'Efectivo',monto:''}], fecha:venta?.fecha||hoy(),
     tipoComprobante:venta?.tipoComprobante||'Boleta',facturaRuc:venta?.facturaRuc||'',razonSocial:venta?.razonSocial||'',
   };
 }
@@ -48,6 +48,7 @@ export function Ventas({data,mutate,ocupado,mostrar}) {
           </td></tr>{detalle===v.id&&<tr id={`detalle-${v.id}`} style={{background:'#FAFAFB'}}><td colSpan={8} style={{padding:'14px 16px'}}><div className="ficha-venta">
             <Dato label={v.tipoDocumento||'Documento'} value={v.numeroDocumento}/><Dato label="Celular" value={v.telefono}/><Dato label="Correo" value={v.correo}/><Dato label="Dirección" value={v.direccion}/>
             {v.ruc&&<Dato label="RUC empresa" value={v.ruc}/>} {v.facturaRuc&&<Dato label="RUC factura" value={v.facturaRuc}/>} {v.razonSocial&&<Dato label="Razón social" value={v.razonSocial}/>} {v.editadoEn&&<Dato label="Editada el" value={formatearDia(v.editadoEn)}/>}<Dato label="Pagos" value={pagosTexto(v)}/>
+            <div className="campo-completo"><BotonConstancia venta={v} mostrar={mostrar}/></div>
           </div></td></tr>}</React.Fragment>;
       })}</Tabla>
     </Panel>
@@ -56,6 +57,22 @@ export function Ventas({data,mutate,ocupado,mostrar}) {
 
 function Dato({label,value}) {return <div><span style={{color:'var(--text-muted)'}}>{label}: </span>{value||'—'}</div>;}
 
+function BotonConstancia({venta,mostrar}) {
+  const [descargando,setDescargando]=useState(false);
+  async function guardarPDF() {
+    setDescargando(true);
+    try {
+      const {descargarConstancia}=await import('./constancia.js');
+      await descargarConstancia(venta);
+    } catch {
+      mostrar('No se pudo descargar la constancia. Inténtalo otra vez.');
+    } finally {
+      setDescargando(false);
+    }
+  }
+  return <Btn onClick={guardarPDF} disabled={descargando}>{descargando?'Generando PDF…':'Descargar constancia (PDF)'}</Btn>;
+}
+
 function VentaForm({venta,stock,data,mutate,ocupado,cerrar}) {
   const [form,setForm]=useState(()=>datosFormulario(venta,stock));
   const [error,setError]=useState('');
@@ -63,8 +80,20 @@ function VentaForm({venta,stock,data,mutate,ocupado,cerrar}) {
   const empresa=form.tipoDocumento==='RUC', factura=form.tipoComprobante==='Factura';
   const tipoPersona=empresa?'DNI':form.tipoDocumento;
   const monto=centavos(form.precioVenta);
+  const unicoPago=form.pagos.length===1;
+  const pagosActuales=form.pagos.map(p=>({metodo:p.metodo,monto:unicoPago?monto:centavos(p.monto)}));
+  const sumaPagos=pagosActuales.reduce((total,pago)=>total+pago.monto,0);
+  const diferencia=monto-sumaPagos;
   const campo=(name,value)=>setForm(f=>({...f,[name]:value}));
   const control=name=>({name,value:form[name],onChange:e=>campo(name,e.target.value)});
+  function cambiarPago(indice,clave,valor) {
+    campo('pagos',form.pagos.map((p,i)=>i===indice?{...p,[clave]:valor}:p));
+  }
+  function agregarPago() {
+    const anteriores=unicoPago?[{...form.pagos[0],monto:monto>0?(monto/100).toFixed(2):''}]:form.pagos;
+    const siguiente=metodos.find(m=>!anteriores.some(p=>p.metodo===m));
+    campo('pagos',[...anteriores,{metodo:siguiente||metodos[0],monto:''}]);
+  }
   function buscarCliente() {
     if(!form.numeroDocumento)return;
     const cliente=data.clientes.find(c=>c.numeroDocumento===form.numeroDocumento)||data.ventas.findLast(v=>v.numeroDocumento===form.numeroDocumento);
@@ -79,10 +108,12 @@ function VentaForm({venta,stock,data,mutate,ocupado,cerrar}) {
     if(factura&&(!validarDocumento('RUC',form.facturaRuc)||!form.razonSocial.trim()))return setError('Completa el RUC válido y la razón social de la factura.');
     if(form.telefono&&!/^9\d{8}$/.test(form.telefono))return setError('El celular debe tener 9 dígitos y empezar con 9.');
     if(monto<=0||!form.cliente.trim())return setError('Ingresa el nombre del cliente y un precio mayor a cero.');
+    if(pagosActuales.some(p=>!p.metodo||p.monto<=0))return setError('Ingresa un importe mayor a cero en cada pago.');
+    if(diferencia!==0)return setError('La suma de los pagos debe coincidir con el precio de venta.');
     if(!venta&&!form.motoId)return setError('Selecciona una moto disponible.');
     const identidad={cliente:form.cliente.trim(),tipoDocumento:form.tipoDocumento,numeroDocumento:form.numeroDocumento,ruc:empresa?form.ruc:'',telefono:form.telefono.trim(),correo:form.correo.trim(),direccion:form.direccion.trim()};
     const objeto={...identidad,precioVenta:monto/100,fecha:form.fecha,tipoComprobante:form.tipoComprobante,
-      facturaRuc:factura?form.facturaRuc:'',razonSocial:factura?form.razonSocial.trim():'',metodoPago:form.metodo,pagos:[{metodo:form.metodo,monto:monto/100}]};
+      facturaRuc:factura?form.facturaRuc:'',razonSocial:factura?form.razonSocial.trim():'',metodoPago:pagosActuales[0].metodo,pagos:pagosActuales.map(p=>({...p,monto:p.monto/100}))};
     const ok=await mutate(d=>{
       const anterior=venta&&d.ventas.find(v=>v.id===venta.id);
       const moto=!venta&&d.motos.find(m=>m.id===form.motoId&&m.estado==='disponible');
@@ -93,7 +124,6 @@ function VentaForm({venta,stock,data,mutate,ocupado,cerrar}) {
       Object.assign(cliente,datos,{nombre});
       if(!d.clientes.some(c=>c.id===cliente.id))d.clientes.push(cliente);
       if(anterior) {
-        if(anterior.pagos?.length>1&&centavos(anterior.precioVenta)===monto&&anterior.pagos[0].metodo===form.metodo) objeto.pagos=anterior.pagos;
         Object.assign(anterior,objeto,{clienteId:cliente.id,editadoEn:hoy()});
       } else {
         moto.estado='vendida';
@@ -116,10 +146,20 @@ function VentaForm({venta,stock,data,mutate,ocupado,cerrar}) {
       <Campo label="Precio de venta (S/)"><input type="number" min="0.01" step="0.01" {...control('precioVenta')} required/></Campo>
       <Campo label="Comprobante"><select id="ventaComprobante" name="tipoComprobante" value={form.tipoComprobante} onChange={e=>{const t=e.target.value;setForm(f=>({...f,tipoComprobante:t,facturaRuc:t==='Factura'?f.facturaRuc||f.ruc:'',razonSocial:t==='Factura'?f.razonSocial||(empresa?f.cliente:''):''}));}}><option>Boleta</option><option>Factura</option></select></Campo>
       <Campo label="Fecha de venta"><input type="date" {...control('fecha')} required/></Campo>
-      <div id="pagosBox" className="venta-pagos"><div className="venta-subtitulo">Forma de pago</div><div data-pago-row className="venta-pago-row"><div style={{fontSize:12.5,paddingBottom:10}}>Pago</div>
-        <Campo label="Método"><select data-metodo="" value={form.metodo} onChange={e=>campo('metodo',e.target.value)}>{[...new Set([...metodos,form.metodo])].map(m=><option key={m}>{m}</option>)}</select></Campo>
-        <Campo label="Monto (S/) · se completa solo"><input data-monto="" type="number" readOnly value={monto>0?(monto/100).toFixed(2):''} style={{background:'#F0F2F4'}}/></Campo>
-      </div><div id="pagosResumen" style={{fontSize:12.5,marginTop:6,color:monto>0?'var(--teal)':'#B42318'}}>{monto>0?`✓ Total a cobrar ${moneda(monto/100)} = ${form.metodo} ${moneda(monto/100)}`:'Primero ingresa el precio de venta.'}</div></div>
+      <div id="pagosBox" className="venta-pagos">
+        <div className="venta-subtitulo">Forma de pago</div>
+        {form.pagos.map((p,i)=><div key={i} data-pago-row className="venta-pago-row">
+          <div className="venta-pago-numero">Pago {i+1}</div>
+          <Campo label={`Método del pago ${i+1}`}><select data-metodo="" value={p.metodo} onChange={e=>cambiarPago(i,'metodo',e.target.value)}>{[...new Set([...metodos,p.metodo])].map(m=><option key={m}>{m}</option>)}</select></Campo>
+          <Campo label={`Monto del pago ${i+1} (S/)`}><input data-monto="" type="number" min="0.01" step="0.01" readOnly={unicoPago} required={!unicoPago}
+            value={unicoPago?(monto>0?(monto/100).toFixed(2):''):p.monto} onChange={e=>cambiarPago(i,'monto',e.target.value)}/></Campo>
+          {!unicoPago&&<Btn className="btn btn-secondary venta-pago-quitar" aria-label={`Quitar pago ${i+1}`} onClick={()=>campo('pagos',form.pagos.filter((_,j)=>j!==i))}>Quitar</Btn>}
+        </div>)}
+        {form.pagos.length<3&&<Btn onClick={agregarPago}>Agregar pago</Btn>}
+        <div id="pagosResumen" className="venta-pago-resumen" role="status" style={{color:monto>0&&diferencia===0?'var(--teal)':'#B42318'}}>
+          {monto<=0?'Primero ingresa el precio de venta.':`Total de pagos: ${moneda(sumaPagos/100)} · ${diferencia===0?'Importe completo':diferencia>0?`Falta ${moneda(diferencia/100)}`:`Excede en ${moneda(-diferencia/100)}`}`}
+        </div>
+      </div>
       {factura&&<div id="facturaBox" className="venta-factura"><div className="venta-subtitulo">Datos para la factura</div><div className="form-grid" style={{margin:0}}>
         <Campo label="RUC"><input required id="ventaFacturaRuc" name="facturaRuc" placeholder="11 dígitos" value={form.facturaRuc} onChange={e=>campo('facturaRuc',limpiarDocumento('RUC',e.target.value))}/></Campo>
         <Campo label="Razón social" style={{gridColumn:'span 2'}}><input id="ventaRazonSocial" {...control('razonSocial')} required placeholder="Nombre de la empresa"/></Campo>

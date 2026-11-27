@@ -1,14 +1,33 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Encabezado,Panel,Btn} from './ui.jsx';
 import {csv,descargar,pagos,pagosTexto,pasos,repuestosActuales,hoy} from './negocio.js';
 
 export function Reportes({data,scores,ocupado,mutate,restaurar,mostrar}) {
-  const exportarVentas=()=>csv('ventas.csv', [['ID Venta','ID Moto','Fecha','Moto','Chasis','Cliente','Tipo Doc','N Documento','RUC Cliente','Celular','Correo','Direccion','Comprobante','Precio Venta','Precio Compra','Ganancia','Pagos','RUC Factura','Razon Social','Simulado'],
-    ...data.ventas.map(v=>[v.id,v.motoId,v.fecha,v.motoDesc,v.chasis,v.cliente,v.tipoDocumento,v.numeroDocumento,v.ruc,v.telefono,v.correo,v.direccion,v.tipoComprobante,v.precioVenta,v.precioCompra,v.precioVenta-v.precioCompra,pagosTexto(v),v.facturaRuc,v.razonSocial,v.simulado?'SI':'NO'])]);
-  const exportarPagos=()=>csv('pagos.csv',[['ID Venta','Fecha','Metodo','Monto','Simulado'],...data.ventas.flatMap(v=>pagos(v).map(p=>[v.id,v.fecha,p.metodo,p.monto,v.simulado?'SI':'NO']))]);
-  const exportarMotos=()=>csv('inventario.csv',[['ID Moto','Marca','Modelo','Color','Chasis','Motor','Proveedor','Precio Compra','Precio Venta Sugerido','Fecha Ingreso','Estado','Simulado'],...data.motos.map(v=>[v.id,v.marca,v.modelo,v.color,v.chasis,v.motor,v.proveedor,v.precioCompra,v.precioVentaSugerido,v.fechaIngreso,v.estado,v.simulado?'SI':'NO'])]);
-  const exportarRepuestos=()=>csv('repuestos.csv',[['Código','Repuesto','Categoría','Stock','Precio compra','Precio venta','Valor del stock a precio venta','Peso (kg)','Ancho (cm)','Largo (cm)','Altura (cm)','Stock mínimo'],...repuestosActuales(data).map(p=>[p.codigo,p.nombre,p.categoria,p.stock,p.compra,p.venta,p.stock*p.venta,p.peso,p.ancho,p.largo,p.altura,p.minimo])]);
-  const exportarLeads=()=>csv('prospectos.csv',[['ID Prospecto','Fecha registro','Nombre','Celular','Canal','Modelo','Color','Precio cotizado','Presupuesto','Estado','Seguimientos','Último contacto','Próximo seguimiento','Motivo de pérdida','Prioridad registrada','Prioridad estimada','Proporción de la hoja (%)','Correo'],...data.leads.map(l=>[l.id,l.fechaRegistro,l.nombre,l.telefono,l.canal,l.modelo,l.color,l.precio,l.presupuesto,pasos[l.estado],l.seguimientos,l.ultimoContacto,l.proximo,l.motivo,l.prioridadRegistrada,scores[l.id]?.prioridad||'—',scores[l.id]?.score,l.correo])]);
+  const [descargando,setDescargando]=useState('');
+  const ventas=()=>[['ID Venta','ID Moto','Fecha','Moto','Chasis','Cliente','Tipo Doc','N Documento','RUC Cliente','Celular','Correo','Direccion','Comprobante','Precio Venta','Precio Compra','Ganancia','Pagos','RUC Factura','Razon Social','Simulado'],
+    ...data.ventas.map(v=>[v.id,v.motoId,v.fecha,v.motoDesc,v.chasis,v.cliente,v.tipoDocumento,v.numeroDocumento,v.ruc,v.telefono,v.correo,v.direccion,v.tipoComprobante,v.precioVenta,v.precioCompra,v.precioVenta-v.precioCompra,pagosTexto(v),v.facturaRuc,v.razonSocial,v.simulado?'SI':'NO'])];
+  const pagosVentas=()=>[['ID Venta','Fecha','Metodo','Monto','Simulado'],...data.ventas.flatMap(v=>pagos(v).map(p=>[v.id,v.fecha,p.metodo,p.monto,v.simulado?'SI':'NO']))];
+  const motos=()=>[['ID Moto','Marca','Modelo','Color','Chasis','Motor','Proveedor','Precio Compra','Precio Venta Sugerido','Fecha Ingreso','Estado','Simulado'],...data.motos.map(v=>[v.id,v.marca,v.modelo,v.color,v.chasis,v.motor,v.proveedor,v.precioCompra,v.precioVentaSugerido,v.fechaIngreso,v.estado,v.simulado?'SI':'NO'])];
+  const repuestos=()=>[['Código','Repuesto','Categoría','Stock','Precio compra','Precio venta','Valor del stock a precio venta','Peso (kg)','Ancho (cm)','Largo (cm)','Altura (cm)','Stock mínimo'],...repuestosActuales(data).map(p=>[p.codigo,p.nombre,p.categoria,p.stock,p.compra,p.venta,p.stock*p.venta,p.peso,p.ancho,p.largo,p.altura,p.minimo])];
+  const prospectos=()=>[['ID Prospecto','Fecha registro','Nombre','Celular','Canal','Modelo','Color','Precio cotizado','Presupuesto','Estado','Seguimientos','Último contacto','Próximo seguimiento','Motivo de pérdida','Prioridad registrada','Prioridad estimada','Proporción de la hoja (%)','Correo'],...data.leads.map(l=>[l.id,l.fechaRegistro,l.nombre,l.telefono,l.canal,l.modelo,l.color,l.precio,l.presupuesto,pasos[l.estado],l.seguimientos,l.ultimoContacto,l.proximo,l.motivo,l.prioridadRegistrada,scores[l.id]?.prioridad||'—',scores[l.id]?.score,l.correo])];
+  const informes=[
+    {titulo:'Ventas',archivo:'ventas',id:'btnExportVentas',filas:ventas,fechas:[2],soles:[13,14,15]},
+    {titulo:'Pagos',archivo:'pagos',id:'btnExportPagos',filas:pagosVentas,fechas:[1],soles:[3]},
+    {titulo:'Motos',archivo:'inventario',id:'btnExportInv',filas:motos,fechas:[9],soles:[7,8]},
+    {titulo:'Repuestos',archivo:'repuestos',id:'btnExportParts',filas:repuestos,fechas:[],soles:[4,5,6]},
+    {titulo:'Prospectos',archivo:'prospectos',id:'btnExportLeads',filas:prospectos,fechas:[1,11,12],soles:[7,8]}
+  ];
+  async function exportarExcel(informe) {
+    setDescargando(informe.archivo);
+    try {
+      const {descargarExcel}=await import('./excel.js');
+      await descargarExcel(informe,informe.filas());
+    } catch {
+      mostrar('No se pudo descargar el reporte en Excel. Inténtalo otra vez.');
+    } finally {
+      setDescargando('');
+    }
+  }
   function respaldo(){descargar(`fmotos-respaldo-${hoy()}.json`,JSON.stringify(data,null,2),'application/json');}
   async function importar(event){
     const input=event.currentTarget, archivo=input.files?.[0];
@@ -23,8 +42,14 @@ export function Reportes({data,scores,ocupado,mutate,restaurar,mostrar}) {
     } catch(e) {mostrar(e.message==='Unexpected end of JSON input'?'El respaldo JSON estaba vacío.':e.message);}
   }
   return <><Encabezado titulo="Reportes" detalle="Exporta una copia de los registros del panel"/>
-    <Panel titulo="Exportar"><p style={{fontSize:13.5,color:'var(--text-muted)',marginTop:0}}>Descarga tus datos en formato CSV (se abre directo en Excel). Cada tabla lleva su ID para poder relacionarlas.</p>
-      <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:14}}><Btn id="btnExportVentas" onClick={exportarVentas}>Descargar ventas (CSV)</Btn><Btn id="btnExportPagos" onClick={exportarPagos}>Descargar pagos (CSV)</Btn><Btn id="btnExportInv" onClick={exportarMotos}>Descargar motos (CSV)</Btn><Btn id="btnExportParts" onClick={exportarRepuestos}>Descargar repuestos (CSV)</Btn><Btn id="btnExportLeads" onClick={exportarLeads}>Descargar prospectos (CSV)</Btn></div>
+    <Panel titulo="Exportar a Excel">
+      <div className="reportes-botones">{informes.map(informe=><Btn key={informe.archivo} disabled={Boolean(descargando)} onClick={()=>exportarExcel(informe)}>
+        {descargando===informe.archivo?'Generando Excel…':`Descargar ${informe.titulo.toLowerCase()} (Excel)`}
+      </Btn>)}</div>
+      <details className="ia-method"><summary>Descargas CSV</summary>
+        <div className="reportes-botones">{informes.map(informe=><Btn key={informe.archivo} id={informe.id}
+          onClick={()=>csv(`${informe.archivo}.csv`,informe.filas())}>{`Descargar ${informe.titulo.toLowerCase()} (CSV)`}</Btn>)}</div>
+      </details>
     </Panel>
     <Panel titulo="Datos"><p style={{fontSize:13,color:'var(--text-muted)',marginTop:0}}>Guarda una copia de los registros y de los movimientos del inventario.</p>
       <div style={{display:'flex',gap:10,flexWrap:'wrap'}}><Btn onClick={respaldo}>Descargar respaldo (JSON)</Btn><label className="btn btn-secondary respaldo"><input type="file" accept=".json,application/json" aria-label="Importar respaldo" onChange={importar} disabled={ocupado}/>Importar respaldo (JSON)</label></div>

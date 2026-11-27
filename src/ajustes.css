@@ -13,8 +13,19 @@
 .venta-pagos,.venta-factura{grid-column:1/-1;border:1px solid var(--border);border-radius:10px;padding:14px;background:#FAFBFC;}
 .venta-factura{border-style:dashed;background:#FAFCFB;}
 .venta-subtitulo{font-size:12.5px;font-weight:600;margin-bottom:10px;}
-.venta-pago-row{display:grid;grid-template-columns:90px 1fr 1fr;gap:10px;align-items:end;margin-bottom:8px;}
+.venta-pago-row{display:grid;grid-template-columns:65px minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end;margin-bottom:8px;}
+.venta-pago-numero{font-size:12.5px;padding-bottom:10px;}
+.venta-pago-row .field{min-width:0;}
+.venta-pago-row input[readonly]{background:#F0F2F4;}
+.venta-pago-quitar{justify-self:end;}
+.venta-pago-resumen{font-size:12.5px;margin-top:8px;}
+.reportes-botones{display:flex;gap:10px;flex-wrap:wrap;}
+.ia-method .reportes-botones{margin-top:10px;}
 .respaldo{position:relative;overflow:hidden;}
 .respaldo input{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;}
 .respaldo:focus-within{outline:2px solid var(--teal);outline-offset:2px;}
 @media(max-width:760px){.campo-dos,.campo-completo{grid-column:1/-1;}}
+@media(max-width:540px){
+  .venta-pago-row{grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid var(--border);padding-bottom:8px;}
+  .venta-pago-numero,.venta-pago-quitar{grid-column:1/-1;padding-bottom:0;}
+}
