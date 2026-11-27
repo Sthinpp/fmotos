@@ -17,7 +17,7 @@ FMotos es un panel para gestionar ventas de motos, prospectos, clientes e invent
 | CRM | Organiza prospectos, contactos y seguimientos. |
 | Inventario | Controla motos, repuestos, entradas, salidas y alertas por stock mínimo. |
 | Inteligencia IA | Proyecta ventas, compara planes de reposición, estima prioridades y agrupa los repuestos. |
-| Reportes | Descarga cinco reportes en Excel con la marca FMotos, exporta CSV y administra respaldos en JSON. |
+| Reportes | Descarga cinco reportes en Excel con un resumen y su detalle, exporta CSV y administra respaldos en JSON. |
 
 ## Ejecutar en tu computadora
 

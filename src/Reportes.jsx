@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Encabezado,Panel,Btn} from './ui.jsx';
 import {csv,descargar,pagos,pagosTexto,pasos,repuestosActuales,hoy} from './negocio.js';
+import {resumenVentas,resumenPagos,resumenMotos,resumenRepuestos,resumenProspectos} from './resumenReportes.js';
 
 export function Reportes({data,scores,ocupado,mutate,restaurar,mostrar}) {
   const [descargando,setDescargando]=useState('');
@@ -11,17 +12,17 @@ export function Reportes({data,scores,ocupado,mutate,restaurar,mostrar}) {
   const repuestos=()=>[['Código','Repuesto','Categoría','Stock','Precio compra','Precio venta','Valor del stock a precio venta','Peso (kg)','Ancho (cm)','Largo (cm)','Altura (cm)','Stock mínimo'],...repuestosActuales(data).map(p=>[p.codigo,p.nombre,p.categoria,p.stock,p.compra,p.venta,p.stock*p.venta,p.peso,p.ancho,p.largo,p.altura,p.minimo])];
   const prospectos=()=>[['ID Prospecto','Fecha registro','Nombre','Celular','Canal','Modelo','Color','Precio cotizado','Presupuesto','Estado','Seguimientos','Último contacto','Próximo seguimiento','Motivo de pérdida','Prioridad registrada','Prioridad estimada','Proporción de la hoja (%)','Correo'],...data.leads.map(l=>[l.id,l.fechaRegistro,l.nombre,l.telefono,l.canal,l.modelo,l.color,l.precio,l.presupuesto,pasos[l.estado],l.seguimientos,l.ultimoContacto,l.proximo,l.motivo,l.prioridadRegistrada,scores[l.id]?.prioridad||'—',scores[l.id]?.score,l.correo])];
   const informes=[
-    {titulo:'Ventas',archivo:'ventas',id:'btnExportVentas',filas:ventas,fechas:[2],soles:[13,14,15]},
-    {titulo:'Pagos',archivo:'pagos',id:'btnExportPagos',filas:pagosVentas,fechas:[1],soles:[3]},
-    {titulo:'Motos',archivo:'inventario',id:'btnExportInv',filas:motos,fechas:[9],soles:[7,8]},
-    {titulo:'Repuestos',archivo:'repuestos',id:'btnExportParts',filas:repuestos,fechas:[],soles:[4,5,6]},
-    {titulo:'Prospectos',archivo:'prospectos',id:'btnExportLeads',filas:prospectos,fechas:[1,11,12],soles:[7,8]}
+    {titulo:'Ventas',archivo:'ventas',id:'btnExportVentas',filas:ventas,fechas:[2],soles:[13,14,15],color:'2C7A24',resumen:resumenVentas},
+    {titulo:'Pagos',archivo:'pagos',id:'btnExportPagos',filas:pagosVentas,fechas:[1],soles:[3],color:'1B6B62',resumen:resumenPagos},
+    {titulo:'Motos',archivo:'inventario',id:'btnExportInv',filas:motos,fechas:[9],soles:[7,8],color:'496131',resumen:resumenMotos},
+    {titulo:'Repuestos',archivo:'repuestos',id:'btnExportParts',filas:repuestos,fechas:[],soles:[4,5,6],color:'365C4C',resumen:resumenRepuestos},
+    {titulo:'Prospectos',archivo:'prospectos',id:'btnExportLeads',filas:prospectos,fechas:[1,11,12],soles:[7,8],color:'315D69',resumen:resumenProspectos}
   ];
   async function exportarExcel(informe) {
     setDescargando(informe.archivo);
     try {
       const {descargarExcel}=await import('./excel.js');
-      await descargarExcel(informe,informe.filas());
+      await descargarExcel(informe,informe.filas(),informe.resumen(data));
     } catch {
       mostrar('No se pudo descargar el reporte en Excel. Inténtalo otra vez.');
     } finally {

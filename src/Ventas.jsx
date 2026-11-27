@@ -148,6 +148,7 @@ function VentaForm({venta,stock,data,mutate,ocupado,cerrar}) {
       <Campo label="Fecha de venta"><input type="date" {...control('fecha')} required/></Campo>
       <div id="pagosBox" className="venta-pagos">
         <div className="venta-subtitulo">Forma de pago</div>
+        <p className="ia-note">Puedes dividir el total en hasta tres pagos.</p>
         {form.pagos.map((p,i)=><div key={i} data-pago-row className="venta-pago-row">
           <div className="venta-pago-numero">Pago {i+1}</div>
           <Campo label={`Método del pago ${i+1}`}><select data-metodo="" value={p.metodo} onChange={e=>cambiarPago(i,'metodo',e.target.value)}>{[...new Set([...metodos,p.metodo])].map(m=><option key={m}>{m}</option>)}</select></Campo>
